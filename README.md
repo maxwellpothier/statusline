@@ -4,7 +4,7 @@ My custom [Claude Code](https://claude.com/claude-code) status line — a single
 self-contained bash script.
 
 ```
- storefront-2    master  (● 3)    71.5k (47%)    Opus 4.8 (xhigh)    5% (12:30pm)
+ <cwd>    <branch>  (● 3)    71.5k (47%)    Opus 4.8 (xhigh)    5% (12:30pm)
 ```
 
 ## Segments
