@@ -11,12 +11,18 @@ RESET='\033[0m'
 
 AUTOCOMPACT_LIMIT=150000
 
-# Nerd Font codicons
-ICON_FOLDER=$''
-ICON_BRANCH=$''
-ICON_COIN=$''
-ICON_MODEL=$''
-ICON_CLOCK=$''
+# Nerd Font codicons (codepoints noted per line). The glyphs are written as raw
+# UTF-8 byte escapes rather than literal characters so this file stays pure
+# ASCII: it then survives copy/paste through clipboards, browsers, and Unicode
+# normalizers that silently strip Private Use Area codepoints. Using \xHH (not
+# \uHHHH) keeps it working on macOS's stock bash 3.2, which predates \u in $'...'.
+ICON_FOLDER=$'\xEE\xAB\xB7'  # U+EAF7 codicon folder
+ICON_BRANCH=$'\xEE\xA9\xA8'  # U+EA68 codicon git-branch
+ICON_COIN=$'\xEE\xAA\x95'    # U+EA95 codicon credit-card
+ICON_MODEL=$'\xEE\xB0\x90'   # U+EC10 codicon hubot
+ICON_CLOCK=$'\xEF\x80\x97'   # U+F017 FontAwesome clock
+BULLET=$'\xE2\x97\x8F'       # U+25CF dirty-file marker (not a Nerd Font glyph,
+                             # but escaped too so the whole file is pure ASCII)
 
 input=$(cat)
 cwd=$(echo "$input" | jq -r '.cwd // .workspace.current_dir // ""')
@@ -29,8 +35,12 @@ five_h=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage | if . ==
 five_h_reset=""
 if [ -n "$five_h" ]; then
   reset_epoch=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
-  # BSD date (macOS): -r reads an epoch. e.g. " 3:50PM" -> "3:50pm"
-  [ -n "$reset_epoch" ] && five_h_reset=$(date -r "$reset_epoch" '+%l:%M%p' 2>/dev/null | tr 'A-Z' 'a-z' | sed 's/^ *//')
+  if [ -n "$reset_epoch" ]; then
+    # Format the epoch as local time. BSD date (macOS) takes -r <epoch>; GNU date
+    # (Linux, WSL, Git Bash) takes -d @<epoch>. Try BSD, fall back to GNU.
+    reset_raw=$(date -r "$reset_epoch" '+%l:%M%p' 2>/dev/null || date -d "@$reset_epoch" '+%l:%M%p' 2>/dev/null)
+    five_h_reset=$(echo "$reset_raw" | tr 'A-Z' 'a-z' | sed 's/^ *//')
+  fi
 fi
 
 [ -z "$cwd" ] && exit 0
@@ -47,10 +57,17 @@ format_tokens() {
   }'
 }
 
+# Print a file's lines newest-first: GNU `tac` where present (Linux, WSL, Git
+# Bash), else BSD `tail -r` (macOS ships no tac). Keeps the token segment working
+# on all three platforms, not just macOS.
+reverse_lines() {
+  if command -v tac >/dev/null 2>&1; then tac "$@"; else tail -r "$@"; fi
+}
+
 tokens=""
 pct=""
 if [ -n "$transcript" ] && [ -f "$transcript" ]; then
-  total=$(tail -r "$transcript" 2>/dev/null \
+  total=$(reverse_lines "$transcript" 2>/dev/null \
     | jq -r 'select(.message.usage) | .message.usage | (.input_tokens + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0) + (.output_tokens // 0))' 2>/dev/null \
     | head -1)
   tokens=$(format_tokens "$total")
@@ -80,7 +97,7 @@ branch=$(git -C "$repo_root" --no-optional-locks symbolic-ref --short HEAD 2>/de
 diff_count=$(git -C "$repo_root" --no-optional-locks status --porcelain 2>/dev/null | wc -l | tr -d ' ')
 
 printf "${CYAN}%s %s${RESET}   ${GREEN}%s %s${RESET}" "$ICON_FOLDER" "$repo_name" "$ICON_BRANCH" "$branch"
-[ "$diff_count" -gt 0 ] 2>/dev/null && printf " ${DIM}(● %s)${RESET}" "$diff_count"
+[ "$diff_count" -gt 0 ] 2>/dev/null && printf " ${DIM}(%s %s)${RESET}" "$BULLET" "$diff_count"
 [ -n "$tokens" ] && printf "   ${YELLOW}%s %s${RESET}" "$ICON_COIN" "$tokens"
 [ -n "$pct" ] && printf " ${DIM}(%s%%)${RESET}" "$pct"
 [ -n "$model" ] && printf "   ${RED}%s %s${RESET}" "$ICON_MODEL" "$model"
