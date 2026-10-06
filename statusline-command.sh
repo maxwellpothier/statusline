@@ -23,6 +23,7 @@ ICON_MODEL=$'\xEE\xB0\x90'   # U+EC10 codicon hubot
 ICON_CLOCK=$'\xEF\x80\x97'   # U+F017 FontAwesome clock
 BULLET=$'\xE2\x97\x8F'       # U+25CF dirty-file marker (not a Nerd Font glyph,
                              # but escaped too so the whole file is pure ASCII)
+ARROW_UP=$'\xE2\x86\x91'     # U+2191 unpushed-commit marker
 
 input=$(cat)
 cwd=$(echo "$input" | jq -r '.cwd // .workspace.current_dir // ""')
@@ -95,9 +96,19 @@ branch=$(git -C "$repo_root" --no-optional-locks symbolic-ref --short HEAD 2>/de
   || echo "detached")
 
 diff_count=$(git -C "$repo_root" --no-optional-locks status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+# Commits on HEAD that no remote branch has: covers both a branch ahead of its
+# upstream and a local branch that was never pushed.
+ahead_count=$(git -C "$repo_root" --no-optional-locks rev-list --count HEAD --not --remotes 2>/dev/null)
+
+git_parts=""
+[ "$diff_count" -gt 0 ] 2>/dev/null && git_parts="$BULLET $diff_count"
+if [ "$ahead_count" -gt 0 ] 2>/dev/null; then
+  [ -n "$git_parts" ] && git_parts="$git_parts "
+  git_parts="$git_parts$ARROW_UP $ahead_count"
+fi
 
 printf "${CYAN}%s %s${RESET}   ${GREEN}%s %s${RESET}" "$ICON_FOLDER" "$repo_name" "$ICON_BRANCH" "$branch"
-[ "$diff_count" -gt 0 ] 2>/dev/null && printf " ${DIM}(%s %s)${RESET}" "$BULLET" "$diff_count"
+[ -n "$git_parts" ] && printf " ${DIM}(%s)${RESET}" "$git_parts"
 [ -n "$tokens" ] && printf "   ${YELLOW}%s %s${RESET}" "$ICON_COIN" "$tokens"
 [ -n "$pct" ] && printf " ${DIM}(%s%%)${RESET}" "$pct"
 [ -n "$model" ] && printf "   ${RED}%s %s${RESET}" "$ICON_MODEL" "$model"

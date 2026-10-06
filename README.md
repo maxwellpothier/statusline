@@ -4,7 +4,7 @@ My custom [Claude Code](https://claude.com/claude-code) status line — a single
 self-contained bash script.
 
 ```
- <cwd>    <branch>  (● 3)    71.5k (47%)    Opus 4.8 (xhigh)    5% (12:30pm)
+ <cwd>    <branch>  (● 3 ↑ 1)    71.5k (47%)    Opus 4.8 (xhigh)    5% (12:30pm)
 ```
 
 ## Segments
@@ -14,7 +14,7 @@ Left to right (each segment hides itself when its data is unavailable):
 | Segment | Color | Source |
 | --- | --- | --- |
 |  repo name | cyan | git toplevel of `cwd` |
-|  branch `(● N)` | green / dim | current branch + count of dirty files |
+|  branch `(● N ↑ M)` | green / dim | current branch + count of dirty files + commits no remote has |
 |  session tokens `(N%)` | yellow / dim | tokens in context from the transcript, as % of a 150k "happy context" budget (see below) |
 |  model `(effort)` | red / dim | `model.display_name` + `effort.level` from stdin |
 |  5h usage `(reset time)` | magenta / dim | `rate_limits.five_hour.used_percentage` (rounded) + local time the 5-hour rolling limit window resets |
