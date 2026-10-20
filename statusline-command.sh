@@ -6,6 +6,7 @@ GREEN='\033[1;32m'
 YELLOW='\033[1;33m'
 RED='\033[1;31m'
 MAGENTA='\033[1;35m'
+NOW_GREY='\033[1;38;5;248m'
 DIM='\033[2;37m'
 RESET='\033[0m'
 
@@ -59,7 +60,7 @@ while [ -n "$dir" ] && [ "$dir" != "/" ]; do
 done
 
 print_now() {
-  [ -n "$now_line" ] && printf "\n${GREEN}%s${RESET}" "$now_line"
+  [ -n "$now_line" ] && printf "\n${NOW_GREY}%s${RESET}" "$now_line"
 }
 
 format_tokens() {
