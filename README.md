@@ -22,6 +22,12 @@ Left to right (each segment hides itself when its data is unavailable):
 The 5-hour usage segment requires a Claude.ai **Pro/Max** subscription and only
 appears after the first API response in a session.
 
+### Second line: `.now`
+
+If the session's folder, or any folder above it, has a `.now` file, its first line is
+shown in green on a second line. Use it to pin your current next step for a workspace,
+e.g. `▶ NOW: open the PR`. Without a `.now` file the status line stays one line.
+
 ### Why the token percentage is out of 150k
 
 The percentage is deliberately **not** a share of the model's full context window.

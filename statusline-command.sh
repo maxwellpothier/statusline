@@ -46,6 +46,22 @@ fi
 
 [ -z "$cwd" ] && exit 0
 
+# Second line: the first line of the nearest .now file at or above cwd, if any.
+# Lets a workspace pin its current next step under the status line.
+now_line=""
+dir="$cwd"
+while [ -n "$dir" ] && [ "$dir" != "/" ]; do
+  if [ -f "$dir/.now" ]; then
+    now_line=$(head -1 "$dir/.now")
+    break
+  fi
+  dir=$(dirname "$dir")
+done
+
+print_now() {
+  [ -n "$now_line" ] && printf "\n${GREEN}%s${RESET}" "$now_line"
+}
+
 format_tokens() {
   local n="$1"
   if [ -z "$n" ] || [ "$n" = "null" ] || [ "$n" -eq 0 ] 2>/dev/null; then
@@ -87,6 +103,7 @@ if [ -z "$repo_root" ]; then
   [ -n "$effort" ] && printf " ${DIM}(%s)${RESET}" "$effort"
   [ -n "$five_h" ] && printf "   ${MAGENTA}%s %s%%${RESET}" "$ICON_CLOCK" "$five_h"
   [ -n "$five_h_reset" ] && printf " ${DIM}(%s)${RESET}" "$five_h_reset"
+  print_now
   exit 0
 fi
 
@@ -115,3 +132,4 @@ printf "${CYAN}%s %s${RESET}   ${GREEN}%s %s${RESET}" "$ICON_FOLDER" "$repo_name
 [ -n "$effort" ] && printf " ${DIM}(%s)${RESET}" "$effort"
 [ -n "$five_h" ] && printf "   ${MAGENTA}%s %s%%${RESET}" "$ICON_CLOCK" "$five_h"
 [ -n "$five_h_reset" ] && printf " ${DIM}(%s)${RESET}" "$five_h_reset"
+print_now
