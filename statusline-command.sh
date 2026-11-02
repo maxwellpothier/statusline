@@ -60,7 +60,9 @@ while [ -n "$dir" ] && [ "$dir" != "/" ]; do
 done
 
 print_now() {
-  [ -n "$now_line" ] && printf "\n${NOW_GREY}%s${RESET}" "$now_line"
+  # `||` rather than `&&`: this is the script's last command, and a false test
+  # would make it exit 1, which Claude Code treats as no status line at all.
+  [ -z "$now_line" ] || printf "\n${NOW_GREY}%s${RESET}" "$now_line"
 }
 
 format_tokens() {
