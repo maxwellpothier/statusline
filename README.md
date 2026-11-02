@@ -13,7 +13,7 @@ Left to right (each segment hides itself when its data is unavailable):
 
 | Segment | Color | Source |
 | --- | --- | --- |
-|  repo name | cyan | git toplevel of `cwd` |
+|  repo name | cyan | git toplevel of `cwd` (the worktree folder in a worktree); hidden outside git |
 |  branch `(● N ↑ M)` | green / dim | current branch + count of dirty files + commits no remote has |
 |  session tokens `(N%)` | yellow / dim | tokens in context from the transcript, as % of a 150k "happy context" budget (see below) |
 |  model `(effort)` | red / dim | `model.display_name` + `effort.level` from stdin |

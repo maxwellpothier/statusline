@@ -99,12 +99,14 @@ fi
 repo_root=$(git -C "$cwd" --no-optional-locks rev-parse --show-toplevel 2>/dev/null)
 
 if [ -z "$repo_root" ]; then
-  printf "${CYAN}%s %s${RESET}" "$ICON_FOLDER" "$(basename "$cwd")"
-  [ -n "$tokens" ] && printf "   ${YELLOW}%s %s${RESET}" "$ICON_COIN" "$tokens"
+  # No folder segment outside git, so the first segment shown gets no leading
+  # separator.
+  sep=""
+  [ -n "$tokens" ] && { printf "${YELLOW}%s %s${RESET}" "$ICON_COIN" "$tokens"; sep="   "; }
   [ -n "$pct" ] && printf " ${DIM}(%s%%)${RESET}" "$pct"
-  [ -n "$model" ] && printf "   ${RED}%s %s${RESET}" "$ICON_MODEL" "$model"
+  [ -n "$model" ] && { printf "%s${RED}%s %s${RESET}" "$sep" "$ICON_MODEL" "$model"; sep="   "; }
   [ -n "$effort" ] && printf " ${DIM}(%s)${RESET}" "$effort"
-  [ -n "$five_h" ] && printf "   ${MAGENTA}%s %s%%${RESET}" "$ICON_CLOCK" "$five_h"
+  [ -n "$five_h" ] && printf "%s${MAGENTA}%s %s%%${RESET}" "$sep" "$ICON_CLOCK" "$five_h"
   [ -n "$five_h_reset" ] && printf " ${DIM}(%s)${RESET}" "$five_h_reset"
   print_now
   exit 0
